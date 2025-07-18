@@ -30,32 +30,35 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
   const PROFIT_DURATION = 4 * 60 * 60 * 1000;
   const WITHDRAWAL_TAX_PERCENT = 0.03;
 
-  const hasInvestmentHistory = useMemo(() => {
-    // Fetch investments from Supabase instead of localStorage
-    const fetchInvestments = async () => {
-      const investments = await dbHelpers.getInvestmentsByUserEmail(user.email);
-      return investments.some(inv => inv.userEmail === user.email);
+  const [hasInvestmentHistory, setHasInvestmentHistory] = useState(false);
+
+  useEffect(() => {
+    const checkInvestmentHistory = async () => {
+      try {
+        const investments = await dbHelpers.getInvestmentsByUserEmail(user.email);
+        setHasInvestmentHistory(investments.length > 0);
+      } catch (error) {
+        console.error('Error checking investment history:', error);
+        setHasInvestmentHistory(false);
+      }
     };
 
-    fetchInvestments().then(hasHistory => {
-      return hasHistory;
-    });
-    return false;
+    if (user.email) {
+      checkInvestmentHistory();
+    }
   }, [user.email, transactions]);
 
 
-  const calculateGains = useCallback(() => {
-    // Fetch investments from Supabase instead of localStorage
-    const fetchInvestments = async () => {
+  const calculateGains = useCallback(async () => {
+    try {
       const investments = await dbHelpers.getInvestmentsByUserEmail(user.email);
-      let investmentCompleted = false;
       let currentDynamicBenefits = 0;
 
       const investmentsToComplete = [];
 
       investments.forEach(inv => {
-        if (inv.status === 'approved' && inv.approvalDate && !inv.isComplete) {
-          const approvalTime = new Date(inv.approvalDate).getTime();
+        if (inv.status === 'approved' && inv.approval_date && !inv.is_complete) {
+          const approvalTime = new Date(inv.approval_date).getTime();
           const now = new Date().getTime();
           const elapsedTime = now - approvalTime;
 
@@ -63,7 +66,7 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
             investmentsToComplete.push(inv);
           } else {
             const timeRatio = elapsedTime / PROFIT_DURATION;
-            const baseProfit = timeRatio * (inv.finalProfitTarget || 0);
+            const baseProfit = timeRatio * (inv.final_profit_target || 0);
             const fluctuation = (Math.random() - 0.5) * baseProfit * 0.05;
             currentDynamicBenefits += Math.max(0, baseProfit + fluctuation);
           }
@@ -71,38 +74,40 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
       });
 
       const completedBenefits = investments
-        .filter(inv => inv.isComplete)
-        .reduce((sum, inv) => sum + (inv.finalProfitTarget || 0), 0);
+        .filter(inv => inv.is_complete)
+        .reduce((sum, inv) => sum + (inv.final_profit_target || 0), 0);
 
       setDisplayedBenefits(completedBenefits + currentDynamicBenefits);
 
       if (investmentsToComplete.length > 0) {
-        investmentsToComplete.forEach(async inv => {
-          // Update investment status in Supabase
-          await dbHelpers.updateInvestment(inv.id, { isComplete: true });
-          // Update user benefits and capital in Supabase (example)
-          const profit = inv.finalProfitTarget || 0;
-          await dbHelpers.addProfitToUserBalance(user.id, profit, inv.price);
-          updateUser(await dbHelpers.getUserById(user.id)); // Fetch updated user data
-          toast({ title: "Investissement(s) Terminé(s)!", description: "Vos bénéfices ont été ajoutés à votre capital total." });
-          if(onDataUpdate) onDataUpdate();
-        });
+        for (const inv of investmentsToComplete) {
+          try {
+            await dbHelpers.updateInvestment(inv.id, { is_complete: true });
+            const profit = inv.final_profit_target || 0;
+            await dbHelpers.addProfitToUserBalance(user.id, profit, inv.amount);
+            const updatedUser = await dbHelpers.getUserById(user.id);
+            updateUser(updatedUser);
+            toast({ title: "Investissement(s) Terminé(s)!", description: "Vos bénéfices ont été ajoutés à votre capital total." });
+            if(onDataUpdate) onDataUpdate();
+          } catch (error) {
+            console.error('Error completing investment:', error);
+          }
+        }
       }
 
-      const deposits = await dbHelpers.getUserTransactions(user.id).then(data => 
-        data.filter(t => t.type === 'deposit')
-      );
-      const storedInvestments = await dbHelpers.getUserInvestments(user.id);
-      const withdrawals = await dbHelpers.getUserTransactions(user.id).then(data => 
-        data.filter(t => t.type === 'withdrawal')
-      );
+      // Load transactions
+      try {
+        const allTransactions = await dbHelpers.getUserTransactions(user.id);
+        const userInvestments = await dbHelpers.getUserInvestments(user.id);
+        setTransactions([...allTransactions, ...userInvestments].sort((a,b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date)));
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+      }
 
-      setTransactions([...deposits, ...storedInvestments, ...withdrawals].sort((a,b) => new Date(b.date) - new Date(a.date)));
-    };
-
-    fetchInvestments();
-
-  }, [user.email, updateUser, onDataUpdate]);
+    } catch (error) {
+      console.error('Error in calculateGains:', error);
+    }
+  }, [user.email, user.id, updateUser, onDataUpdate]);
 
   const generateQRCode = async (address) => {
     try {

@@ -180,6 +180,38 @@ export const dbHelpers = {
     return data;
   },
 
+  async getInvestmentsByUserEmail(userEmail) {
+    const { data, error } = await supabase
+      .from(TABLES.INVESTMENTS)
+      .select('*')
+      .eq('user_email', userEmail)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async addProfitToUserBalance(userId, profit, initialInvestment) {
+    const user = await this.getUserById(userId);
+    const updatedUser = {
+      totalCapital: (user.totalCapital || 0) + profit + initialInvestment,
+      benefits: (user.benefits || 0) + profit
+    };
+    
+    return await this.updateUser(userId, updatedUser);
+  },
+
+  async getUserByEmail(email) {
+    const { data, error } = await supabase
+      .from(TABLES.USERS)
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   // Settings operations
   async getSettings() {
     const { data, error } = await supabase

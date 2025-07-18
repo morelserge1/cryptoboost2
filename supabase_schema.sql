@@ -1,4 +1,3 @@
-
 -- Enable Row Level Security
 ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
 
@@ -29,49 +28,53 @@ CREATE TABLE IF NOT EXISTS transactions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create investments table
+-- Investments table
 CREATE TABLE IF NOT EXISTS investments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  plan_name VARCHAR(100) NOT NULL,
-  amount DECIMAL(15,2) NOT NULL,
-  expected_profit DECIMAL(15,2) NOT NULL,
-  current_profit DECIMAL(15,2) DEFAULT 0,
-  duration_days INTEGER NOT NULL,
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'completed', 'stopped')),
-  start_date TIMESTAMP WITH TIME ZONE,
-  end_date TIMESTAMP WITH TIME ZONE,
-  last_profit_update TIMESTAMP WITH TIME ZONE,
+  user_email TEXT NOT NULL,
+  plan_name TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  expected_profit DECIMAL(10,2),
+  final_profit_target DECIMAL(10,2),
+  duration_days INTEGER DEFAULT 30,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'stopped')),
+  approval_date TIMESTAMP WITH TIME ZONE,
+  is_complete BOOLEAN DEFAULT FALSE,
+  crypto_type TEXT,
+  crypto_amount DECIMAL(20,8),
+  paid_with TEXT,
+  date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create deposits table
+-- Deposits table
 CREATE TABLE IF NOT EXISTS deposits (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  amount DECIMAL(15,2) NOT NULL,
-  crypto_type VARCHAR(10) NOT NULL,
-  wallet_address VARCHAR(255),
-  transaction_hash VARCHAR(255),
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-  admin_notes TEXT,
+  user_email TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  crypto_type TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  admin_comment TEXT,
+  date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create withdrawals table
+-- Withdrawals table  
 CREATE TABLE IF NOT EXISTS withdrawals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  amount DECIMAL(15,2) NOT NULL,
-  crypto_type VARCHAR(10) NOT NULL,
-  wallet_address VARCHAR(255) NOT NULL,
-  fee_amount DECIMAL(15,2) DEFAULT 0,
-  net_amount DECIMAL(15,2) NOT NULL,
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
-  admin_notes TEXT,
-  transaction_hash VARCHAR(255),
+  user_email TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  tax DECIMAL(10,2) DEFAULT 0,
+  crypto_type TEXT NOT NULL,
+  address TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  admin_note TEXT,
+  date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -198,7 +201,7 @@ BEGIN
     SET balance = balance + profit_amount,
         total_profit = total_profit + profit_amount
     WHERE id = user_id;
-    
+
     -- Create transaction record
     INSERT INTO transactions (user_id, type, amount, status)
     VALUES (user_id, 'profit', profit_amount, 'completed');

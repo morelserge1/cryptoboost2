@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { dbHelpers } from '@/lib/customSupabaseClient';
 
 const plans = [
   { 
@@ -184,8 +185,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
     toast({ title: "✅ Copié !", description: "L'adresse de dépôt a été copiée." });
   };
   
-  const handleConfirmInvestment = () => {
-    const investments = JSON.parse(localStorage.getItem('investments') || '[]');
+  const handleConfirmInvestment = async () => {
     let paymentDetails = {};
     let updatedUser;
     
@@ -231,7 +231,13 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
       ...paymentDetails
     };
     
-    await dbHelpers.createInvestment(newInvestment);
+    try {
+      await dbHelpers.createInvestment(newInvestment);
+    } catch (error) {
+      console.error('Error creating investment:', error);
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de créer l\'investissement.' });
+      return;
+    }
     
     setSelectedPlan(null);
     if(onInvestment) onInvestment();
