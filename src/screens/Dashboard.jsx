@@ -10,11 +10,19 @@ import InvestmentPlans from '@/components/InvestmentPlans';
 import LiveTrading from '@/components/LiveTrading';
 import Ticker from '@/components/Ticker';
 import CustomerReviews from '@/components/CustomerReviews';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { dbHelpers } from '@/lib/customSupabaseClient';
 
 const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, promoteUser }) => {
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('wallet');
   const [totalInvested, setTotalInvested] = useState(0);
   const [displayedTotalCapital, setDisplayedTotalCapital] = useState(user.totalCapital || 0);
+  const [transactions, setTransactions] = useState([]);
+  const [investments, setInvestments] = useState([]);
+  const [deposits, setDeposits] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const refreshData = useCallback(() => {
     const investments = JSON.parse(localStorage.getItem('investments') || '[]');
@@ -43,7 +51,7 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
     const interval = setInterval(() => {
       const allInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
       const userInvestments = allInvestments.filter(inv => inv.userEmail === user.email);
-      
+
       const completedBenefits = userInvestments
         .filter(inv => inv.isComplete)
         .reduce((sum, inv) => sum + (inv.finalProfitTarget || 0), 0);
@@ -54,7 +62,7 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
           const approvalTime = new Date(inv.approvalDate).getTime();
           const now = new Date().getTime();
           const elapsedTime = now - approvalTime;
-          
+
           if (elapsedTime < PROFIT_DURATION) {
             const timeRatio = elapsedTime / PROFIT_DURATION;
             const baseProfit = timeRatio * (inv.finalProfitTarget || 0);
@@ -63,12 +71,48 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
           }
         }
       });
-      
+
       setDisplayedTotalCapital((user.capital || 0) + completedBenefits + currentDynamicBenefits);
     }, 2000);
 
     return () => clearInterval(interval);
   }, [user.email, user.capital]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Load user-specific data
+        if (user?.id) {
+          const [userTransactions, userInvestments] = await Promise.all([
+            dbHelpers.getUserTransactions(user.id),
+            dbHelpers.getUserInvestments(user.id)
+          ]);
+
+          setTransactions(userTransactions);
+          setInvestments(userInvestments);
+        }
+
+        // Load admin data if user is admin
+        if (user?.role === 'admin') {
+          const [allDeposits, allWithdrawals] = await Promise.all([
+            dbHelpers.getPendingDeposits(),
+            dbHelpers.getPendingWithdrawals()
+          ]);
+
+          setDeposits(allDeposits);
+          setWithdrawals(allWithdrawals);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
 
   return (
     <div className="min-h-screen tech-bg cyber-grid">
@@ -102,13 +146,13 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
                     <span className="sm:hidden">Support</span>
                   </a>
                 </Button>
-              <Button onClick={logout} variant="destructive" size="icon" className="rounded-full w-8 h-8 sm:w-10 sm:h-10 neon-border">
+              <Button onClick={() => signOut()} variant="destructive" size="icon" className="rounded-full w-8 h-8 sm:w-10 sm:h-10 neon-border">
                 <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </div>
           </div>
         </motion.header>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <TabsList className="h-auto glass-card-dark border-cyan-500/30 w-full grid grid-cols-2 sm:flex sm:flex-wrap justify-center p-1 gap-1">
              <TabsTrigger value="wallet" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4 py-2 font-mono">
@@ -180,7 +224,7 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
           </motion.div>
 
           <Ticker />
-          
+
            <TabsContent value="wallet">
             <CryptoWallet user={user} updateUser={updateUser} onDataUpdate={handleDataUpdate}/>
           </TabsContent>
@@ -196,7 +240,7 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
           <TabsContent value="trading">
             <LiveTrading />
           </TabsContent>
-          
+
           {user.role === 'admin' && (
             <TabsContent value="admin">
               <AdminPanel 

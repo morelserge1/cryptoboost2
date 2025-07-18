@@ -122,6 +122,108 @@ export const dbHelpers = {
     return data;
   },
 
+  async updateDeposit(depositId, updates) {
+    const { data, error } = await supabase
+      .from(TABLES.DEPOSITS)
+      .update(updates)
+      .eq('id', depositId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Withdrawal operations
+  async createWithdrawal(withdrawalData) {
+    const { data, error } = await supabase
+      .from(TABLES.WITHDRAWALS)
+      .insert([withdrawalData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getPendingWithdrawals() {
+    const { data, error } = await supabase
+      .from(TABLES.WITHDRAWALS)
+      .select('*, users(*)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async updateWithdrawal(withdrawalId, updates) {
+    const { data, error } = await supabase
+      .from(TABLES.WITHDRAWALS)
+      .update(updates)
+      .eq('id', withdrawalId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async updateInvestment(investmentId, updates) {
+    const { data, error } = await supabase
+      .from(TABLES.INVESTMENTS)
+      .update(updates)
+      .eq('id', investmentId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Settings operations
+  async getSettings() {
+    const { data, error } = await supabase
+      .from(TABLES.SETTINGS)
+      .select('*')
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async updateSettings(updates) {
+    const { data, error } = await supabase
+      .from(TABLES.SETTINGS)
+      .upsert(updates)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Admin operations
+  async getAllUsers() {
+    const { data, error } = await supabase
+      .from(TABLES.USERS)
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteUser(userId) {
+    const { error } = await supabase
+      .from(TABLES.USERS)
+      .delete()
+      .eq('id', userId);
+    
+    if (error) throw error;
+    return true;
+  }
+
   // Withdrawal operations
   async createWithdrawal(withdrawalData) {
     const { data, error } = await supabase

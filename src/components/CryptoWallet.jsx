@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownToLine, ArrowUpFromLine, Copy, Check, Clock, CheckCircle, XCircle, TrendingUp, Info, MessageSquare, Briefcase, BarChartBig, Layers, History } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Copy, Check, Clock, CheckCircle, XCircle, TrendingUp, Info, MessageSquare, Briefcase, BarChartBig, Layers, History, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { dbHelpers } from '@/lib/customSupabaseClient';
 
 const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
   const [isDepositOpen, setDepositOpen] = useState(false);
@@ -22,104 +24,110 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
   const [activeWithdrawTab, setActiveWithdrawTab] = useState('BTC');
   const [depositAmount, setDepositAmount] = useState('');
   const [displayedBenefits, setDisplayedBenefits] = useState(user.benefits || 0);
-  
+
   const PROFIT_DURATION = 4 * 60 * 60 * 1000;
   const WITHDRAWAL_TAX_PERCENT = 0.03;
 
   const hasInvestmentHistory = useMemo(() => {
-    const allInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
-    return allInvestments.some(inv => inv.userEmail === user.email);
+    // Fetch investments from Supabase instead of localStorage
+    const fetchInvestments = async () => {
+      const investments = await dbHelpers.getInvestmentsByUserEmail(user.email);
+      return investments.some(inv => inv.userEmail === user.email);
+    };
+
+    fetchInvestments().then(hasHistory => {
+      return hasHistory;
+    });
+    return false;
   }, [user.email, transactions]);
 
 
   const calculateGains = useCallback(() => {
-    const allInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
-    const userInvestments = allInvestments.filter(inv => inv.userEmail === user.email);
-    
-    let investmentCompleted = false;
-    let currentDynamicBenefits = 0;
-    
-    const investmentsToComplete = [];
+    // Fetch investments from Supabase instead of localStorage
+    const fetchInvestments = async () => {
+      const investments = await dbHelpers.getInvestmentsByUserEmail(user.email);
+      let investmentCompleted = false;
+      let currentDynamicBenefits = 0;
 
-    userInvestments.forEach(inv => {
-      if (inv.status === 'approved' && inv.approvalDate && !inv.isComplete) {
-        const approvalTime = new Date(inv.approvalDate).getTime();
-        const now = new Date().getTime();
-        const elapsedTime = now - approvalTime;
-        
-        if (elapsedTime >= PROFIT_DURATION) {
-          investmentsToComplete.push(inv);
-        } else {
-          const timeRatio = elapsedTime / PROFIT_DURATION;
-          const baseProfit = timeRatio * (inv.finalProfitTarget || 0);
-          const fluctuation = (Math.random() - 0.5) * baseProfit * 0.05;
-          currentDynamicBenefits += Math.max(0, baseProfit + fluctuation);
-        }
-      }
-    });
+      const investmentsToComplete = [];
 
-    const completedBenefits = userInvestments
-      .filter(inv => inv.isComplete)
-      .reduce((sum, inv) => sum + (inv.finalProfitTarget || 0), 0);
-      
-    setDisplayedBenefits(completedBenefits + currentDynamicBenefits);
+      investments.forEach(inv => {
+        if (inv.status === 'approved' && inv.approvalDate && !inv.isComplete) {
+          const approvalTime = new Date(inv.approvalDate).getTime();
+          const now = new Date().getTime();
+          const elapsedTime = now - approvalTime;
 
-    if (investmentsToComplete.length > 0) {
-      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const currentUserIndex = allUsers.findIndex(u => u.email === user.email);
-      if(currentUserIndex !== -1) {
-        let currentUser = allUsers[currentUserIndex];
-        let totalProfitToAdd = 0;
-        let totalInvestedToRemove = 0;
-
-        investmentsToComplete.forEach(inv => {
-          const investmentInStorage = allInvestments.find(i => i.id === inv.id);
-          if (investmentInStorage) {
-            investmentInStorage.isComplete = true;
-            totalProfitToAdd += (inv.finalProfitTarget || 0);
-            totalInvestedToRemove += inv.price;
+          if (elapsedTime >= PROFIT_DURATION) {
+            investmentsToComplete.push(inv);
+          } else {
+            const timeRatio = elapsedTime / PROFIT_DURATION;
+            const baseProfit = timeRatio * (inv.finalProfitTarget || 0);
+            const fluctuation = (Math.random() - 0.5) * baseProfit * 0.05;
+            currentDynamicBenefits += Math.max(0, baseProfit + fluctuation);
           }
-        });
+        }
+      });
 
-        currentUser.totalCapital = (currentUser.totalCapital || 0) + totalProfitToAdd;
-        currentUser.investedCapital = Math.max(0, (currentUser.investedCapital || 0) - totalInvestedToRemove);
-        currentUser.benefits = (currentUser.benefits || 0) + totalProfitToAdd;
-        
-        allUsers[currentUserIndex] = currentUser;
-        localStorage.setItem('users', JSON.stringify(allUsers));
-        localStorage.setItem('investments', JSON.stringify(allInvestments));
-        updateUser(currentUser);
-        toast({ title: "Investissement(s) Terminé(s)!", description: "Vos bénéfices ont été ajoutés à votre capital total." });
-        if(onDataUpdate) onDataUpdate();
+      const completedBenefits = investments
+        .filter(inv => inv.isComplete)
+        .reduce((sum, inv) => sum + (inv.finalProfitTarget || 0), 0);
+
+      setDisplayedBenefits(completedBenefits + currentDynamicBenefits);
+
+      if (investmentsToComplete.length > 0) {
+        investmentsToComplete.forEach(async inv => {
+          // Update investment status in Supabase
+          await dbHelpers.updateInvestment(inv.id, { isComplete: true });
+          // Update user benefits and capital in Supabase (example)
+          const profit = inv.finalProfitTarget || 0;
+          await dbHelpers.addProfitToUserBalance(user.id, profit, inv.price);
+          updateUser(await dbHelpers.getUserById(user.id)); // Fetch updated user data
+          toast({ title: "Investissement(s) Terminé(s)!", description: "Vos bénéfices ont été ajoutés à votre capital total." });
+          if(onDataUpdate) onDataUpdate();
+        });
       }
-    }
-    
-    const deposits = JSON.parse(localStorage.getItem('deposits') || '[]').filter(d => d.userEmail === user.email);
-    const storedInvestments = JSON.parse(localStorage.getItem('investments') || '[]').filter(i => i.userEmail === user.email);
-    const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]').filter(w => w.userEmail === user.email);
-    setTransactions([...deposits, ...storedInvestments, ...withdrawals].sort((a,b) => new Date(b.date) - new Date(a.date)));
+
+      const deposits = await dbHelpers.getDepositsByUserEmail(user.email);
+      const storedInvestments = await dbHelpers.getInvestmentsByUserEmail(user.email);
+      const withdrawals = await dbHelpers.getWithdrawalsByUserEmail(user.email);
+
+      setTransactions([...deposits, ...storedInvestments, ...withdrawals].sort((a,b) => new Date(b.date) - new Date(a.date)));
+    };
+
+    fetchInvestments();
 
   }, [user.email, updateUser, onDataUpdate]);
 
   useEffect(() => {
-    const storedAddresses = JSON.parse(localStorage.getItem('depositAddresses'));
-    if (storedAddresses) setDepositAddresses(storedAddresses);
-    
-    const storedFeeAddresses = JSON.parse(localStorage.getItem('feeAddresses'));
-    if (storedFeeAddresses) setFeeAddresses(storedFeeAddresses);
+    // Fetch deposit and fee addresses from Supabase or a centralized config
+    const fetchAddresses = async () => {
+      // Example: Fetch from Supabase config table or a predefined object
+      setDepositAddresses({
+        'BTC': 'btc_deposit_address',  // Replace with actual addresses
+        'ETH': 'eth_deposit_address',
+        'SOL': 'sol_deposit_address'
+      });
+      setFeeAddresses({
+        'BTC': 'btc_fee_address',  // Replace with actual addresses
+        'ETH': 'eth_fee_address',
+        'SOL': 'sol_fee_address'
+      });
+    };
+
+    fetchAddresses();
 
     const interval = setInterval(calculateGains, 2000);
 
     return () => clearInterval(interval);
   }, [calculateGains]);
-  
+
   const handleCopyToClipboard = (address) => {
     navigator.clipboard.writeText(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast({ title: "Copié !", description: "L'adresse a été copiée." });
   };
-  
+
   const withdrawableAmount = user.totalCapital || 0;
   const withdrawalTax = hasInvestmentHistory ? withdrawableAmount * WITHDRAWAL_TAX_PERCENT : 0;
 
@@ -131,7 +139,7 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
     }
   };
 
-  const handleWithdrawalConfirmation = () => {
+  const handleWithdrawalConfirmation = async () => {
     if (withdrawStep === 1) {
       setWithdrawStep(2);
     } else if (withdrawStep === 2) {
@@ -139,10 +147,9 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
         toast({ variant: "destructive", title: "Erreur", description: "Veuillez saisir votre adresse de retrait." });
         return;
       }
-      
-      const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]');
+
+      // Create withdrawal request in Supabase
       const newWithdrawal = {
-        id: new Date().getTime(),
         userEmail: user.email,
         amount: withdrawableAmount,
         tax: withdrawalTax,
@@ -152,28 +159,31 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
         date: new Date().toISOString(),
         adminNote: ''
       };
-      localStorage.setItem('withdrawals', JSON.stringify([...withdrawals, newWithdrawal]));
+      try {
+        await dbHelpers.createWithdrawal(newWithdrawal);
 
-      toast({
-        title: "Demande de retrait soumise",
-        description: `Votre demande de retrait de ${withdrawableAmount.toFixed(2)}€ est en attente d'approbation.`,
-      });
-      setWithdrawStep(1);
-      setWithdrawOpen(false);
-      setWithdrawAddress('');
+        toast({
+          title: "Demande de retrait soumise",
+          description: `Votre demande de retrait de ${withdrawableAmount.toFixed(2)}€ est en attente d'approbation.`,
+        });
+        setWithdrawStep(1);
+        setWithdrawOpen(false);
+        setWithdrawAddress('');
+      } catch (error) {
+        toast({ variant: "destructive", title: "Erreur", description: "Failed to create withdrawal request." });
+      }
+
     }
   };
-  
-  const handleDepositConfirmation = () => {
+
+  const handleDepositConfirmation = async () => {
     const amount = parseFloat(depositAmount);
     if(isNaN(amount) || amount <= 0) {
         toast({variant: "destructive", title: "Montant invalide", description: "Veuillez entrer un montant de dépôt valide."});
         return;
     }
 
-    const deposits = JSON.parse(localStorage.getItem('deposits') || '[]');
     const newDeposit = {
-      id: new Date().getTime(),
       userEmail: user.email,
       amount: amount,
       cryptoType: activeDepositTab,
@@ -181,15 +191,19 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
       date: new Date().toISOString(),
       adminComment: ''
     };
-    localStorage.setItem('deposits', JSON.stringify([...deposits, newDeposit]));
 
-    toast({
-      title: "Demande de dépôt enregistrée",
-      description: "Votre dépôt sera validé par un administrateur.",
-    });
+    try {
+      await dbHelpers.createDeposit(newDeposit);
+      toast({
+        title: "Demande de dépôt enregistrée",
+        description: "Votre dépôt sera validé par un administrateur.",
+      });
 
-    setDepositOpen(false);
-    setDepositAmount('');
+      setDepositOpen(false);
+      setDepositAmount('');
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erreur", description: "Failed to create deposit request." });
+    }
   };
 
   const getTransactionType = (tx) => {
@@ -342,7 +356,7 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="glass-card neon-border backdrop-blur-sm">
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="text-lg sm:text-xl lg:text-2xl text-white flex items-center font-mono gradient-text-primary">
