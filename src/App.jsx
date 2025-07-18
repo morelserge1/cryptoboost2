@@ -2,6 +2,7 @@ import React, { useState, Suspense } from 'react';
 import { Helmet } from 'react-helmet';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
+import BackgroundService from '@/components/BackgroundService';
 
 // Lazy loading des composants lourds
 const LoginScreen = React.lazy(() => import('@/screens/LoginScreen'));
