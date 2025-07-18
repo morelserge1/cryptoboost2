@@ -86,7 +86,7 @@ const PlanCard = ({ plan, index, onSelectPlan }) => (
           </div>
         </div>
       )}
-      
+
       <CardHeader className="text-center p-6 relative">
         <div className={`mx-auto mb-4 p-4 glass-card-dark rounded-full ${plan.borderColor} animate-float`}>
           {plan.icon}
@@ -165,7 +165,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
       setDepositAddresses(storedAddresses);
     }
   }, [selectedPlan]);
-  
+
   const handleSelectPlan = (plan) => {
     if (user) {
       setSelectedPlan(plan);
@@ -184,11 +184,11 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
     setTimeout(() => setCopied(false), 2000);
     toast({ title: "✅ Copié !", description: "L'adresse de dépôt a été copiée." });
   };
-  
+
   const handleConfirmInvestment = async () => {
     let paymentDetails = {};
     let updatedUser;
-    
+
     if (paymentMethod === 'capital') {
       if ((user.totalCapital || 0) < selectedPlan.price) {
         toast({ variant: 'destructive', title: '❌ Capital insuffisant', description: 'Votre capital total est insuffisant pour ce plan.' });
@@ -218,7 +218,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
         };
         toast({ title: "⏳ Validation en cours", description: "Votre bot sera activé après validation du paiement." });
     }
-    
+
     updateUser(updatedUser);
 
     const newInvestment = {
@@ -230,7 +230,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
       status: 'pending',
       ...paymentDetails
     };
-    
+
     try {
       await dbHelpers.createInvestment(newInvestment);
     } catch (error) {
@@ -238,7 +238,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
       toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de créer l\'investissement.' });
       return;
     }
-    
+
     setSelectedPlan(null);
     if(onInvestment) onInvestment();
   };
@@ -259,7 +259,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
           <p className="text-xl text-cyan-100 max-w-4xl mx-auto leading-relaxed mb-8">
             Choisissez votre niveau d'automatisation. Nos bots IA travaillent 24h/24 pour maximiser vos profits.
           </p>
-          
+
           {/* Performance Stats */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             {[
@@ -292,7 +292,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
               Sélectionnez votre méthode de paiement pour activer votre bot de trading.
             </DialogDescription>
           </DialogHeader>
-          
+
           <Tabs value={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
             <TabsList className="grid w-full grid-cols-2 glass-card-dark">
               <TabsTrigger value="deposit" className="font-mono">CRYPTO DEPOSIT</TabsTrigger>
@@ -321,7 +321,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
                       </div>
                       <div className="text-sm text-gray-400 mt-2">≈ {selectedPlan?.price}€</div>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="deposit-address" className="text-cyan-300 font-mono">
                         ADRESSE DE DÉPÔT {activeTab}
@@ -343,7 +343,7 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="glass-card-dark p-4 rounded-lg border border-yellow-500/30">
                       <div className="flex items-start">
                         <Clock className="w-5 h-5 text-yellow-400 mr-3 mt-1 shrink-0" />

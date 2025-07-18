@@ -202,14 +202,25 @@ export const dbHelpers = {
   },
 
   async getUserByEmail(email) {
-    const { data, error } = await supabase
-      .from(TABLES.USERS)
-      .select('*')
-      .eq('email', email)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.USERS)
+        .select('*')
+        .eq('email', email)
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned - user doesn't exist
+          return null;
+        }
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      throw error;
+    }
   },
 
   // Settings operations

@@ -199,11 +199,65 @@ RETURNS VOID AS $$
 BEGIN
     UPDATE users 
     SET balance = balance + profit_amount,
-        total_profit = total_profit + profit_amount
+        total_profit = total_profit + profit_amount,
+        updated_at = NOW()
     WHERE id = user_id;
 
     -- Create transaction record
-    INSERT INTO transactions (user_id, type, amount, status)
-    VALUES (user_id, 'profit', profit_amount, 'completed');
+    INSERT INTO transactions (user_id, type, amount, status, created_at)
+    VALUES (user_id, 'profit', profit_amount, 'completed', NOW());
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to handle deposit approval
+CREATE OR REPLACE FUNCTION handle_deposit_approval()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'approved' AND OLD.status = 'pending' THEN
+        -- Update user balance
+        UPDATE users 
+        SET balance = balance + NEW.amount,
+            updated_at = NOW()
+        WHERE email = NEW.user_email;
+        
+        -- Create transaction record
+        INSERT INTO transactions (user_id, type, amount, status, crypto_type, created_at)
+        SELECT id, 'deposit', NEW.amount, 'completed', NEW.crypto_type, NOW()
+        FROM users WHERE email = NEW.user_email;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to handle withdrawal approval
+CREATE OR REPLACE FUNCTION handle_withdrawal_approval()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'approved' AND OLD.status = 'pending' THEN
+        -- Deduct from user balance
+        UPDATE users 
+        SET balance = balance - NEW.amount,
+            updated_at = NOW()
+        WHERE email = NEW.user_email;
+        
+        -- Create transaction record
+        INSERT INTO transactions (user_id, type, amount, status, crypto_type, created_at)
+        SELECT id, 'withdrawal', -NEW.amount, 'completed', NEW.crypto_type, NOW()
+        FROM users WHERE email = NEW.user_email;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create triggers
+CREATE TRIGGER deposit_approval_trigger
+    AFTER UPDATE ON deposits
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_deposit_approval();
+
+CREATE TRIGGER withdrawal_approval_trigger
+    AFTER UPDATE ON withdrawals
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_withdrawal_approval();

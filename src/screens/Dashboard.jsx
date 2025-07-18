@@ -126,9 +126,19 @@ const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, pr
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 gradient-text-primary font-mono">⚡ CryptoBoost</h1>
               <p className="text-sm sm:text-base text-cyan-300 font-mono">TRADER: {user.email}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-400 font-mono">SYSTÈME ACTIF</span>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-400 font-mono">SYSTÈME ACTIF</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-cyan-400 font-mono">IA TRADING</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-purple-400 font-mono">SUPABASE SYNC</span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">

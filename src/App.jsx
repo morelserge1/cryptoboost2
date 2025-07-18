@@ -6,6 +6,7 @@ import LoginScreen from '@/screens/LoginScreen';
 import Dashboard from '@/screens/Dashboard';
 import LandingScreen from '@/screens/LandingScreen';
 import FloatingTelegramButton from '@/components/FloatingTelegramButton';
+import RealtimeNotifications from '@/components/RealtimeNotifications';
 
 function App() {
   const { user, loading, signIn, signOut, signUp } = useAuth();
@@ -51,6 +52,7 @@ function App() {
 
         <FloatingTelegramButton />
         <Toaster />
+        <RealtimeNotifications />
       </div>
     </>
   );

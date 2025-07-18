@@ -1,8 +1,8 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, dbHelpers } from '@/lib/customSupabaseClient';
 
-const AuthContext = createContext({});
+const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -15,23 +15,41 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null);
 
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      
-      if (session?.user) {
-        try {
-          const userData = await dbHelpers.getUserById(session.user.id);
-          setUser(userData);
-        } catch (error) {
-          console.error('Error fetching user data:', error);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session?.user) {
+          try {
+            const userData = await dbHelpers.getUserByEmail(session.user.email);
+            setUser(userData);
+          } catch (dbError) {
+            console.error('Error fetching user data:', dbError);
+            // Create user if doesn't exist
+            try {
+              const newUser = await dbHelpers.createUser({
+                email: session.user.email,
+                role: 'client',
+                balance: 0,
+                invested_amount: 0,
+                total_profit: 0,
+                is_active: true
+              });
+              setUser(newUser);
+            } catch (createError) {
+              console.error('Error creating user:', createError);
+            }
+          }
         }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSession();
@@ -39,118 +57,93 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
           try {
-            const userData = await dbHelpers.getUserById(session.user.id);
+            const userData = await dbHelpers.getUserByEmail(session.user.email);
             setUser(userData);
           } catch (error) {
-            // If user doesn't exist in our database, create them
-            if (error.code === 'PGRST116') {
-              const newUser = {
-                id: session.user.id,
-                email: session.user.email,
-                role: 'client',
-                balance: 0,
-                invested_amount: 0,
-                total_profit: 0,
-                is_active: true,
-                created_at: new Date().toISOString()
-              };
-              
-              try {
-                const createdUser = await dbHelpers.createUser(newUser);
-                setUser(createdUser);
-              } catch (createError) {
-                console.error('Error creating user:', createError);
-              }
-            } else {
-              console.error('Error fetching user data:', error);
-            }
+            console.error('Error fetching user on sign in:', error);
           }
-        } else {
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
         }
-        
-        setLoading(false);
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email, password, userData = {}) => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData
-        }
-      });
-
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const signIn = async (email, password) => {
     try {
-      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
-
       if (error) throw error;
-      return { data, error: null };
+      
+      const userData = await dbHelpers.getUserByEmail(email);
+      setUser(userData);
+      return { user: userData, error: null };
     } catch (error) {
-      return { data: null, error };
-    } finally {
-      setLoading(false);
+      console.error('Sign in error:', error);
+      return { user: null, error };
+    }
+  };
+
+  const signUp = async (email, password) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+      if (error) throw error;
+
+      // Create user profile
+      if (data.user) {
+        const newUser = await dbHelpers.createUser({
+          email: data.user.email,
+          role: 'client',
+          balance: 0,
+          invested_amount: 0,
+          total_profit: 0,
+          is_active: true
+        });
+        setUser(newUser);
+      }
+      
+      return { user: data.user, error: null };
+    } catch (error) {
+      console.error('Sign up error:', error);
+      return { user: null, error };
     }
   };
 
   const signOut = async () => {
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
       setUser(null);
-      setSession(null);
-      return { error: null };
     } catch (error) {
-      return { error };
-    } finally {
-      setLoading(false);
+      console.error('Sign out error:', error);
     }
   };
 
   const updateUser = async (updates) => {
-    if (!user) return { error: 'No user logged in' };
-    
     try {
       const updatedUser = await dbHelpers.updateUser(user.id, updates);
       setUser(updatedUser);
-      return { data: updatedUser, error: null };
+      return updatedUser;
     } catch (error) {
-      return { data: null, error };
+      console.error('Error updating user:', error);
+      throw error;
     }
   };
 
   const value = {
     user,
-    session,
     loading,
-    signUp,
     signIn,
+    signUp,
     signOut,
     updateUser
   };

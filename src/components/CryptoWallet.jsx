@@ -110,18 +110,25 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
   }, [user.email, user.id, updateUser, onDataUpdate]);
 
   const generateQRCode = async (address) => {
+    if (!address) {
+      setQrCodeUrl('');
+      return;
+    }
+    
     try {
       const qrDataUrl = await QRCode.toDataURL(address, {
-        width: 200,
+        width: 256,
         margin: 2,
         color: {
           dark: '#00FFFF',
           light: '#0F172A'
-        }
+        },
+        errorCorrectionLevel: 'M'
       });
       setQrCodeUrl(qrDataUrl);
     } catch (error) {
       console.error('Erreur génération QR code:', error);
+      setQrCodeUrl('');
     }
   };
 
