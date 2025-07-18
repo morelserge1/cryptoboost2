@@ -17,7 +17,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
 
   // Temporary: Show test page to verify database
-  const showTestPage = true;
+  const showTestPage = false;
 
   const handleLoginRequired = () => {
     setShowLogin(true);
