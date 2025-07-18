@@ -11,7 +11,7 @@ import LiveTrading from '@/components/LiveTrading';
 import Ticker from '@/components/Ticker';
 import CustomerReviews from '@/components/CustomerReviews';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { dbHelpers } from '@/lib/customSupabaseClient';
+import { dbHelpers } from '@/lib/localSupabaseClient';
 
 const Dashboard = ({ user, logout, allUsers, updateUser, deleteUser, banUser, promoteUser }) => {
   const { signOut } = useAuth();
