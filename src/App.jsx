@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import BackgroundService from '@/components/BackgroundService';
-import TestPage from '@/components/TestPage';
 
 // Lazy loading des composants lourds
 const LoginScreen = React.lazy(() => import('@/screens/LoginScreen'));
@@ -16,9 +15,6 @@ function App() {
   const { user, loading, signIn, signOut, signUp } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
 
-  // Temporary: Show test page to verify database
-  const showTestPage = false;
-
   const handleLoginRequired = () => {
     setShowLogin(true);
   };
@@ -26,7 +22,10 @@ function App() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-white">Chargement de CryptoBoost...</p>
+        </div>
       </div>
     );
   }
@@ -44,33 +43,32 @@ function App() {
       <div className="min-h-screen bg-slate-900 text-white font-sans">
         <BackgroundService />
         
-        {showTestPage ? (
-          <TestPage />
-        ) : (
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-screen bg-gray-900">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen bg-gray-900">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+              <p className="text-white">Chargement des composants...</p>
             </div>
-          }>
-            {user ? (
-              <Dashboard 
-                user={user} 
-                logout={signOut} 
-              />
-            ) : showLogin ? (
-              <LoginScreen 
-                onBack={() => setShowLogin(false)}
-                onLogin={signIn} 
-                onRegister={signUp}
-              />
-            ) : (
-              <LandingScreen onLoginRequired={handleLoginRequired} />
-            )}
+          </div>
+        }>
+          {user ? (
+            <Dashboard 
+              user={user} 
+              logout={signOut} 
+            />
+          ) : showLogin ? (
+            <LoginScreen 
+              onBack={() => setShowLogin(false)}
+              onLogin={signIn} 
+              onRegister={signUp}
+            />
+          ) : (
+            <LandingScreen onLoginRequired={handleLoginRequired} />
+          )}
 
-            <FloatingTelegramButton />
-            <RealtimeNotifications />
-          </Suspense>
-        )}
+          <FloatingTelegramButton />
+          <RealtimeNotifications />
+        </Suspense>
         
         <Toaster />
       </div>
