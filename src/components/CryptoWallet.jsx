@@ -89,9 +89,13 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
         });
       }
 
-      const deposits = await dbHelpers.getDepositsByUserEmail(user.email);
-      const storedInvestments = await dbHelpers.getInvestmentsByUserEmail(user.email);
-      const withdrawals = await dbHelpers.getWithdrawalsByUserEmail(user.email);
+      const deposits = await dbHelpers.getUserTransactions(user.id).then(data => 
+        data.filter(t => t.type === 'deposit')
+      );
+      const storedInvestments = await dbHelpers.getUserInvestments(user.id);
+      const withdrawals = await dbHelpers.getUserTransactions(user.id).then(data => 
+        data.filter(t => t.type === 'withdrawal')
+      );
 
       setTransactions([...deposits, ...storedInvestments, ...withdrawals].sort((a,b) => new Date(b.date) - new Date(a.date)));
     };

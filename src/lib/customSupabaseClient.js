@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -25,7 +24,7 @@ export const dbHelpers = {
       .insert([userData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -36,7 +35,7 @@ export const dbHelpers = {
       .select('*')
       .eq('id', userId)
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -48,7 +47,7 @@ export const dbHelpers = {
       .eq('id', userId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -60,7 +59,7 @@ export const dbHelpers = {
       .insert([transactionData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -71,7 +70,7 @@ export const dbHelpers = {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   },
@@ -83,7 +82,7 @@ export const dbHelpers = {
       .insert([investmentData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -94,7 +93,7 @@ export const dbHelpers = {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   },
@@ -106,7 +105,7 @@ export const dbHelpers = {
       .insert([depositData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -117,7 +116,7 @@ export const dbHelpers = {
       .select('*, users(*)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   },
@@ -129,7 +128,7 @@ export const dbHelpers = {
       .eq('id', depositId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -141,7 +140,7 @@ export const dbHelpers = {
       .insert([withdrawalData])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -152,7 +151,7 @@ export const dbHelpers = {
       .select('*, users(*)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   },
@@ -164,7 +163,7 @@ export const dbHelpers = {
       .eq('id', withdrawalId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -176,7 +175,7 @@ export const dbHelpers = {
       .eq('id', investmentId)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -187,7 +186,7 @@ export const dbHelpers = {
       .from(TABLES.SETTINGS)
       .select('*')
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -198,7 +197,7 @@ export const dbHelpers = {
       .upsert(updates)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -209,7 +208,7 @@ export const dbHelpers = {
       .from(TABLES.USERS)
       .select('*')
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   },
@@ -219,7 +218,7 @@ export const dbHelpers = {
       .from(TABLES.USERS)
       .delete()
       .eq('id', userId);
-    
+
     if (error) throw error;
     return true;
   }

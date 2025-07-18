@@ -222,20 +222,16 @@ const InvestmentPlans = ({ onInvestment, user, onLoginRequired, updateUser }) =>
     updateUser(updatedUser);
 
     const newInvestment = {
-      id: new Date().getTime(),
-      userEmail: user.email,
-      planName: selectedPlan.name,
-      price: selectedPlan.price,
-      profitTarget: selectedPlan.profitTarget,
-      finalProfitTarget: selectedPlan.profitTarget,
+      user_id: user.id,
+      plan_name: selectedPlan.name,
+      amount: selectedPlan.price,
+      expected_profit: selectedPlan.profitTarget,
+      duration_days: selectedPlan.duration || 30,
       status: 'pending',
-      isComplete: false,
-      date: new Date().toISOString(),
-      adminComment: '',
       ...paymentDetails
     };
     
-    localStorage.setItem('investments', JSON.stringify([...investments, newInvestment]));
+    await dbHelpers.createInvestment(newInvestment);
     
     setSelectedPlan(null);
     if(onInvestment) onInvestment();
