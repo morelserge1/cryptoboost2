@@ -9,6 +9,41 @@ import LandingScreen from '@/screens/LandingScreen';
 import FloatingTelegramButton from '@/components/FloatingTelegramButton';
 
 function App() {
+  const { user, loading } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>CryptoBoost - Trading Automatisé</title>
+        <meta name="description" content="Plateforme de trading automatisé de cryptomonnaies" />
+      </Helmet>
+      
+      {user ? (
+        <Dashboard />
+      ) : showLogin ? (
+        <LoginScreen onBack={() => setShowLogin(false)} />
+      ) : (
+        <LandingScreen onLoginClick={() => setShowLogin(true)} />
+      )}
+      
+      <FloatingTelegramButton />
+      <Toaster />
+    </>
+  );
+}
+
+export default App;
+
+function App() {
   const { user, loading, signIn, signOut, signUp, signInWithGoogle } = useAuth();
   const [isLoginOpen, setLoginOpen] = useState(false);
 
