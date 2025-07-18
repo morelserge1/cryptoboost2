@@ -151,7 +151,10 @@ function main() {
   let pages = [];
   
   if (!fs.existsSync(pagesDir)) {
-    pages.push(processPageFile(appJsxPath, []));
+    const processedAppJsx = processPageFile(appJsxPath, []);
+    if (processedAppJsx) {
+      pages.push(processedAppJsx);
+    }
   } else {
     const routes = extractRoutes(appJsxPath);
     const reactFiles = findReactFiles(pagesDir);

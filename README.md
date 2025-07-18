@@ -1,4 +1,3 @@
-
 # CryptoBoost
 
 CryptoBoost est une application de trading automatisé de cryptomonnaies avec intelligence artificielle, offrant une interface moderne et sécurisée pour les investisseurs.
@@ -31,8 +30,8 @@ CryptoBoost est une application de trading automatisé de cryptomonnaies avec in
 
 1. **Cloner le projet**
 ```bash
-git clone <votre-repo>
-cd cryptoboost
+git clone https://github.com/morelserge1/CryptoBoost.git
+cd CryptoBoost
 ```
 
 2. **Installer les dépendances**
@@ -154,4 +153,6 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 ---
 
 **Version** : 1.0.0 MVP  
-**Dernière mise à jour** : Décembre 2024
+**Dernière mise à jour** : Juillet 2025
+
+

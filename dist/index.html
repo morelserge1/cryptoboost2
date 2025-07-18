@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="generator" content="Hostinger Horizons" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hostinger Horizons</title>
+		
+		<!-- Preconnect pour les fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		
+		<!-- Preload des ressources critiques -->
+		<link rel="modulepreload" href="data:text/jsx;base64,CmltcG9ydCBSZWFjdCBmcm9tICdyZWFjdCc7CmltcG9ydCBSZWFjdERPTSBmcm9tICdyZWFjdC1kb20vY2xpZW50JzsKaW1wb3J0IEFwcCBmcm9tICcuL0FwcC5qc3gnOwppbXBvcnQgJy4vaW5kZXguY3NzJzsKaW1wb3J0IHsgQXV0aFByb3ZpZGVyIH0gZnJvbSAnLi9jb250ZXh0cy9TdXBhYmFzZUF1dGhDb250ZXh0LmpzeCc7CgpSZWFjdERPTS5jcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyb290JykpLnJlbmRlcigKICA8UmVhY3QuU3RyaWN0TW9kZT4KICAgIDxBdXRoUHJvdmlkZXI+CiAgICAgIDxBcHAgLz4KICAgIDwvQXV0aFByb3ZpZGVyPgogIDwvUmVhY3QuU3RyaWN0TW9kZT4sCik7Cg==" />
+		<link rel="modulepreload" href="data:text/jsx;base64,aW1wb3J0IFJlYWN0LCB7IHVzZVN0YXRlLCBTdXNwZW5zZSB9IGZyb20gJ3JlYWN0JzsKaW1wb3J0IHsgSGVsbWV0IH0gZnJvbSAncmVhY3QtaGVsbWV0JzsKaW1wb3J0IHsgVG9hc3RlciB9IGZyb20gJ0AvY29tcG9uZW50cy91aS90b2FzdGVyJzsKaW1wb3J0IHsgdXNlQXV0aCB9IGZyb20gJ0AvY29udGV4dHMvU3VwYWJhc2VBdXRoQ29udGV4dCc7CgovLyBMYXp5IGxvYWRpbmcgZGVzIGNvbXBvc2FudHMgbG91cmRzCmNvbnN0IExvZ2luU2NyZWVuID0gUmVhY3QubGF6eSgoKSA9PiBpbXBvcnQoJ0Avc2NyZWVucy9Mb2dpblNjcmVlbicpKTsKY29uc3QgRGFzaGJvYXJkID0gUmVhY3QubGF6eSgoKSA9PiBpbXBvcnQoJ0Avc2NyZWVucy9EYXNoYm9hcmQnKSk7CmNvbnN0IExhbmRpbmdTY3JlZW4gPSBSZWFjdC5sYXp5KCgpID0+IGltcG9ydCgnQC9zY3JlZW5zL0xhbmRpbmdTY3JlZW4nKSk7CmNvbnN0IEZsb2F0aW5nVGVsZWdyYW1CdXR0b24gPSBSZWFjdC5sYXp5KCgpID0+IGltcG9ydCgnQC9jb21wb25lbnRzL0Zsb2F0aW5nVGVsZWdyYW1CdXR0b24nKSk7CmNvbnN0IFJlYWx0aW1lTm90aWZpY2F0aW9ucyA9IFJlYWN0LmxhenkoKCkgPT4gaW1wb3J0KCdAL2NvbXBvbmVudHMvUmVhbHRpbWVOb3RpZmljYXRpb25zJykpOwoKZnVuY3Rpb24gQXBwKCkgewogIGNvbnN0IHsgdXNlciwgbG9hZGluZywgc2lnbkluLCBzaWduT3V0LCBzaWduVXAgfSA9IHVzZUF1dGgoKTsKICBjb25zdCBbc2hvd0xvZ2luLCBzZXRTaG93TG9naW5dID0gdXNlU3RhdGUoZmFsc2UpOwoKICBjb25zdCBoYW5kbGVMb2dpblJlcXVpcmVkID0gKCkgPT4gewogICAgc2V0U2hvd0xvZ2luKHRydWUpOwogIH07CgogIGlmIChsb2FkaW5nKSB7CiAgICByZXR1cm4gKAogICAgICA8ZGl2IGNsYXNzTmFtZT0iZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgbWluLWgtc2NyZWVuIGJnLWdyYXktOTAwIj4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iYW5pbWF0ZS1zcGluIHJvdW5kZWQtZnVsbCBoLTEyIHctMTIgYm9yZGVyLWItMiBib3JkZXItYmx1ZS00MDAiPjwvZGl2PgogICAgICA8L2Rpdj4KICAgICk7CiAgfQoKICByZXR1cm4gKAogICAgPD4KICAgICAgPEhlbG1ldD4KICAgICAgICA8dGl0bGU+Q3J5cHRvQm9vc3QgLSBCb3QgZCdBcmJpdHJhZ2UgQ3J5cHRvPC90aXRsZT4KICAgICAgICA8bWV0YSBuYW1lPSJkZXNjcmlwdGlvbiIgY29udGVudD0iQm9vc3RleiB2b3MgcmV2ZW51cyBwYXNzaWZzIGdyw6JjZSDDoCBub3MgYm90cyBjcnlwdG8gaW50ZWxsaWdlbnRzLCBxdWkgZXhwbG9pdGVudCBsZXMgw6ljYXJ0cyBkZSBwcml4IGVudHJlIHBsYXRlZm9ybWVzIDI0aC8yNCwgN2ovNy4iIC8+CiAgICAgICAgPGxpbmsgcmVsPSJwcmVjb25uZWN0IiBocmVmPSJodHRwczovL2ZvbnRzLmdvb2dsZWFwaXMuY29tIiAvPgogICAgICAgIDxsaW5rIHJlbD0icHJlY29ubmVjdCIgaHJlZj0iaHR0cHM6Ly9mb250cy5nc3RhdGljLmNvbSIgY3Jvc3NPcmlnaW49InRydWUiIC8+CiAgICAgICAgPGxpbmsgaHJlZj0iaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbS9jc3MyP2ZhbWlseT1JbnRlcjp3Z2h0QDQwMDs1MDA7NjAwOzcwMDs4MDA7OTAwJmRpc3BsYXk9c3dhcCIgcmVsPSJzdHlsZXNoZWV0IiAvPgogICAgICA8L0hlbG1ldD4KCiAgICAgIDxkaXYgY2xhc3NOYW1lPSJtaW4taC1zY3JlZW4gYmctc2xhdGUtOTAwIHRleHQtd2hpdGUgZm9udC1zYW5zIj4KICAgICAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ewogICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIG1pbi1oLXNjcmVlbiBiZy1ncmF5LTkwMCI+CiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJhbmltYXRlLXNwaW4gcm91bmRlZC1mdWxsIGgtMTIgdy0xMiBib3JkZXItYi0yIGJvcmRlci1ibHVlLTQwMCI+PC9kaXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICB9PgogICAgICAgICAge3VzZXIgPyAoCiAgICAgICAgICAgIDxEYXNoYm9hcmQgCiAgICAgICAgICAgICAgdXNlcj17dXNlcn0gCiAgICAgICAgICAgICAgbG9nb3V0PXtzaWduT3V0fSAKICAgICAgICAgICAgLz4KICAgICAgICAgICkgOiBzaG93TG9naW4gPyAoCiAgICAgICAgICAgIDxMb2dpblNjcmVlbiAKICAgICAgICAgICAgICBvbkJhY2s9eygpID0+IHNldFNob3dMb2dpbihmYWxzZSl9CiAgICAgICAgICAgICAgb25Mb2dpbj17c2lnbklufSAKICAgICAgICAgICAgICBvblJlZ2lzdGVyPXtzaWduVXB9CiAgICAgICAgICAgIC8+CiAgICAgICAgICApIDogKAogICAgICAgICAgICA8TGFuZGluZ1NjcmVlbiBvbkxvZ2luUmVxdWlyZWQ9e2hhbmRsZUxvZ2luUmVxdWlyZWR9IC8+CiAgICAgICAgICApfQoKICAgICAgICAgIDxGbG9hdGluZ1RlbGVncmFtQnV0dG9uIC8+CiAgICAgICAgICA8UmVhbHRpbWVOb3RpZmljYXRpb25zIC8+CiAgICAgICAgPC9TdXNwZW5zZT4KICAgICAgICA8VG9hc3RlciAvPgogICAgICA8L2Rpdj4KICAgIDwvPgogICk7Cn0KCmV4cG9ydCBkZWZhdWx0IEFwcDs=" />
+		
+		<!-- DNS prefetch pour les domaines externes -->
+		<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+		<script type="module" crossorigin src="/assets/index-YTWrWh3g.js"></script>
+		<link rel="modulepreload" crossorigin href="/assets/vendor-DZS5dBEv.js">
+		<link rel="modulepreload" crossorigin href="/assets/ui-Cl6vEefb.js">
+		<link rel="modulepreload" crossorigin href="/assets/supabase-Cx4a92Ep.js">
+		<link rel="stylesheet" crossorigin href="/assets/index-DIpJU323.css">
+		<script type="module">
+window.onerror = (message, source, lineno, colno, errorObj) => {
+	const errorDetails = errorObj ? JSON.stringify({
+		name: errorObj.name,
+		message: errorObj.message,
+		stack: errorObj.stack,
+		source,
+		lineno,
+		colno,
+	}) : null;
+
+	window.parent.postMessage({
+		type: 'horizons-runtime-error',
+		message,
+		error: errorDetails
+	}, '*');
+};
+</script>
+		<script type="module">
+const observer = new MutationObserver((mutations) => {
+	for (const mutation of mutations) {
+		for (const addedNode of mutation.addedNodes) {
+			if (
+				addedNode.nodeType === Node.ELEMENT_NODE &&
+				(
+					addedNode.tagName?.toLowerCase() === 'vite-error-overlay' ||
+					addedNode.classList?.contains('backdrop')
+				)
+			) {
+				handleViteOverlay(addedNode);
+			}
+		}
+	}
+});
+
+observer.observe(document.documentElement, {
+	childList: true,
+	subtree: true
+});
+
+function handleViteOverlay(node) {
+	if (!node.shadowRoot) {
+		return;
+	}
+
+	const backdrop = node.shadowRoot.querySelector('.backdrop');
+
+	if (backdrop) {
+		const overlayHtml = backdrop.outerHTML;
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(overlayHtml, 'text/html');
+		const messageBodyElement = doc.querySelector('.message-body');
+		const fileElement = doc.querySelector('.file');
+		const messageText = messageBodyElement ? messageBodyElement.textContent.trim() : '';
+		const fileText = fileElement ? fileElement.textContent.trim() : '';
+		const error = messageText + (fileText ? ' File:' + fileText : '');
+
+		window.parent.postMessage({
+			type: 'horizons-vite-error',
+			error,
+		}, '*');
+	}
+}
+</script>
+		<script type="module">
+const originalConsoleError = console.error;
+console.error = function(...args) {
+	originalConsoleError.apply(console, args);
+
+	let errorString = '';
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg instanceof Error) {
+			errorString = arg.stack || `${arg.name}: ${arg.message}`;
+			break;
+		}
+	}
+
+	if (!errorString) {
+		errorString = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+	}
+
+	window.parent.postMessage({
+		type: 'horizons-console-error',
+		error: errorString
+	}, '*');
+};
+</script>
+		<script type="module">
+const originalFetch = window.fetch;
+
+window.fetch = function(...args) {
+	const url = args[0] instanceof Request ? args[0].url : args[0];
+
+	// Skip WebSocket URLs
+	if (url.startsWith('ws:') || url.startsWith('wss:')) {
+		return originalFetch.apply(this, args);
+	}
+
+	return originalFetch.apply(this, args)
+		.then(async response => {
+			const contentType = response.headers.get('Content-Type') || '';
+
+			// Exclude HTML document responses
+			const isDocumentResponse =
+				contentType.includes('text/html') ||
+				contentType.includes('application/xhtml+xml');
+
+			if (!response.ok && !isDocumentResponse) {
+					const responseClone = response.clone();
+					const errorFromRes = await responseClone.text();
+					const requestUrl = response.url;
+					console.error(`Fetch error from ${requestUrl}: ${errorFromRes}`);
+			}
+
+			return response;
+		})
+		.catch(error => {
+			if (!url.match(/.html?$/i)) {
+				console.error(error);
+			}
+
+			throw error;
+		});
+};
+</script>
+	</head>
+	<body>
+		<div id="root"></div>
+	</body>
+</html>
