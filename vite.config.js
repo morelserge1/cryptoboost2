@@ -210,13 +210,30 @@ export default defineConfig({
 		},
 	},
 	build: {
+		target: 'es2015',
+		minify: 'terser',
+		terserOptions: {
+			compress: {
+				drop_console: true,
+				drop_debugger: true
+			}
+		},
 		rollupOptions: {
 			external: [
 				'@babel/parser',
 				'@babel/traverse',
 				'@babel/generator',
 				'@babel/types'
-			]
-		}
+			],
+			output: {
+				manualChunks: {
+					vendor: ['react', 'react-dom'],
+					ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+					motion: ['framer-motion'],
+					supabase: ['@supabase/supabase-js']
+				}
+			}
+		},
+		chunkSizeWarningLimit: 1000
 	}
 });

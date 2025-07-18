@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Helmet } from 'react-helmet';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import LoginScreen from '@/screens/LoginScreen';
-import Dashboard from '@/screens/Dashboard';
-import LandingScreen from '@/screens/LandingScreen';
-import FloatingTelegramButton from '@/components/FloatingTelegramButton';
-import RealtimeNotifications from '@/components/RealtimeNotifications';
+
+// Lazy loading des composants lourds
+const LoginScreen = React.lazy(() => import('@/screens/LoginScreen'));
+const Dashboard = React.lazy(() => import('@/screens/Dashboard'));
+const LandingScreen = React.lazy(() => import('@/screens/LandingScreen'));
+const FloatingTelegramButton = React.lazy(() => import('@/components/FloatingTelegramButton'));
+const RealtimeNotifications = React.lazy(() => import('@/components/RealtimeNotifications'));
 
 function App() {
   const { user, loading, signIn, signOut, signUp } = useAuth();
@@ -35,24 +37,30 @@ function App() {
       </Helmet>
 
       <div className="min-h-screen bg-slate-900 text-white font-sans">
-        {user ? (
-          <Dashboard 
-            user={user} 
-            logout={signOut} 
-          />
-        ) : showLogin ? (
-          <LoginScreen 
-            onBack={() => setShowLogin(false)}
-            onLogin={signIn} 
-            onRegister={signUp}
-          />
-        ) : (
-          <LandingScreen onLoginRequired={handleLoginRequired} />
-        )}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen bg-gray-900">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+          </div>
+        }>
+          {user ? (
+            <Dashboard 
+              user={user} 
+              logout={signOut} 
+            />
+          ) : showLogin ? (
+            <LoginScreen 
+              onBack={() => setShowLogin(false)}
+              onLogin={signIn} 
+              onRegister={signUp}
+            />
+          ) : (
+            <LandingScreen onLoginRequired={handleLoginRequired} />
+          )}
 
-        <FloatingTelegramButton />
+          <FloatingTelegramButton />
+          <RealtimeNotifications />
+        </Suspense>
         <Toaster />
-        <RealtimeNotifications />
       </div>
     </>
   );

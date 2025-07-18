@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { supabase, dbHelpers } from '@/lib/customSupabaseClient';
 
 const AuthContext = createContext();
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
-        
+
         if (session?.user) {
           try {
             const userData = await dbHelpers.getUserByEmail(session.user.email);
@@ -80,7 +79,7 @@ export const AuthProvider = ({ children }) => {
         password
       });
       if (error) throw error;
-      
+
       const userData = await dbHelpers.getUserByEmail(email);
       setUser(userData);
       return { user: userData, error: null };
@@ -110,7 +109,7 @@ export const AuthProvider = ({ children }) => {
         });
         setUser(newUser);
       }
-      
+
       return { user: data.user, error: null };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -139,14 +138,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     signIn,
     signUp,
     signOut,
     updateUser
-  };
+  }), [user, loading]);
 
   return (
     <AuthContext.Provider value={value}>
