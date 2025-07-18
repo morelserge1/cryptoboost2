@@ -223,27 +223,4 @@ export const dbHelpers = {
     if (error) throw error;
     return true;
   }
-
-  // Withdrawal operations
-  async createWithdrawal(withdrawalData) {
-    const { data, error } = await supabase
-      .from(TABLES.WITHDRAWALS)
-      .insert([withdrawalData])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async getPendingWithdrawals() {
-    const { data, error } = await supabase
-      .from(TABLES.WITHDRAWALS)
-      .select('*, users(*)')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-  }
 };

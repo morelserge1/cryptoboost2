@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownToLine, ArrowUpFromLine, Copy, Check, Clock, CheckCircle, XCircle, TrendingUp, Info, MessageSquare, Briefcase, BarChartBig, Layers, History, Wallet } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Copy, Check, Clock, CheckCircle, XCircle, TrendingUp, Info, MessageSquare, Briefcase, BarChartBig, Layers, History, Wallet, QrCode } from 'lucide-react';
+import QRCode from 'qrcode';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -24,6 +25,7 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
   const [activeWithdrawTab, setActiveWithdrawTab] = useState('BTC');
   const [depositAmount, setDepositAmount] = useState('');
   const [displayedBenefits, setDisplayedBenefits] = useState(user.benefits || 0);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   const PROFIT_DURATION = 4 * 60 * 60 * 1000;
   const WITHDRAWAL_TAX_PERCENT = 0.03;
@@ -98,19 +100,35 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
 
   }, [user.email, updateUser, onDataUpdate]);
 
+  const generateQRCode = async (address) => {
+    try {
+      const qrDataUrl = await QRCode.toDataURL(address, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#00FFFF',
+          light: '#0F172A'
+        }
+      });
+      setQrCodeUrl(qrDataUrl);
+    } catch (error) {
+      console.error('Erreur génération QR code:', error);
+    }
+  };
+
   useEffect(() => {
     // Fetch deposit and fee addresses from Supabase or a centralized config
     const fetchAddresses = async () => {
       // Example: Fetch from Supabase config table or a predefined object
       setDepositAddresses({
-        'BTC': 'btc_deposit_address',  // Replace with actual addresses
-        'ETH': 'eth_deposit_address',
-        'SOL': 'sol_deposit_address'
+        'BTC': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',  // Replace with actual addresses
+        'ETH': '0x742D35Cc6634C0532925a3b8D0C4E0F6c2f5B2e3',
+        'SOL': 'SoL1anAAdre55123456789012345678901234567890'
       });
       setFeeAddresses({
-        'BTC': 'btc_fee_address',  // Replace with actual addresses
-        'ETH': 'eth_fee_address',
-        'SOL': 'sol_fee_address'
+        'BTC': 'bc1qfee2kgdygjrsqtzq2n0yrf2493p83kkfjhx0fee',  // Replace with actual addresses
+        'ETH': '0x742D35Cc6634C0532925a3b8D0C4E0F6c2f5B2fee',
+        'SOL': 'SoL1anAAdre55123456789012345678901234567fee'
       });
     };
 
@@ -120,6 +138,12 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
 
     return () => clearInterval(interval);
   }, [calculateGains]);
+
+  useEffect(() => {
+    if (depositAddresses[activeDepositTab]) {
+      generateQRCode(depositAddresses[activeDepositTab]);
+    }
+  }, [activeDepositTab, depositAddresses]);
 
   const handleCopyToClipboard = (address) => {
     navigator.clipboard.writeText(address);
@@ -284,6 +308,25 @@ const CryptoWallet = ({ user, updateUser, onDataUpdate }) => {
                         <div className="glass-card-dark p-4 rounded-lg border border-yellow-500/30">
                           <p className="text-center text-sm text-yellow-400 font-mono">Envoyez la contre-valeur en {activeDepositTab} à l'adresse ci-dessous.</p>
                         </div>
+                        
+                        {/* QR Code Section */}
+                        <div className="glass-card-dark p-4 rounded-lg border border-cyan-500/30 text-center">
+                          <Label className="text-cyan-300 font-mono flex items-center justify-center mb-3">
+                            <QrCode className="w-4 h-4 mr-2" />
+                            QR CODE {activeDepositTab}
+                          </Label>
+                          {qrCodeUrl && (
+                            <div className="flex justify-center mb-3">
+                              <img 
+                                src={qrCodeUrl} 
+                                alt={`QR Code ${activeDepositTab}`}
+                                className="border-2 border-cyan-500/30 rounded-lg p-2 bg-slate-900"
+                              />
+                            </div>
+                          )}
+                          <p className="text-xs text-cyan-400 font-mono">Scannez avec votre wallet crypto</p>
+                        </div>
+
                         <div className="glass-card-dark p-4 rounded-md border border-cyan-500/30">
                           <Label htmlFor={`deposit-address-${activeDepositTab}`} className="text-cyan-300 font-mono">ADRESSE DÉPÔT {activeDepositTab}</Label>
                           <div className="flex items-center space-x-2 mt-2">
